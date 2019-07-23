@@ -22,6 +22,7 @@ class VideoService():
                 start = i*interval_time
                 end = min((i+1)*interval_time, clip.duration)
                 clip.subclip(start, end).write_videofile("static/"+new_name)
+
                 result.append({"video_url" : VideoService.BASE_URL.format(new_name)})
 
         return {"interval_videos": result}
@@ -71,7 +72,8 @@ class VideoService():
             clips.append(clip.subclip(video.get("start"), video.get("end")))
 
         final_clip = concatenate_videoclips(clips)
-        final_clip.resize(width=width, height=height).write_videofile("static/" + VideoService.ProcessedFile.format("final"))
-        result = {"video_url": VideoService.BASE_URL.format("final")}
+        name = VideoService.ProcessedFile.format("final")
+        final_clip.resize(width=width, height=height).write_videofile("static/" + name)
+        result = {"video_url": VideoService.BASE_URL.format(name)}
 
         return result
