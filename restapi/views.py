@@ -60,3 +60,19 @@ def process_segments(request):
         logging.error("Error : ", ex)
         return Response("Could not process" + str(ex), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
+
+
+@api_view(['POST'])
+@renderer_classes((JSONRenderer,))
+def combine_video(request):
+    """
+    Store the Result for User Url
+    """
+    try:
+        if request.data.get('segments', None) is None:
+            raise Exception("Url is Required")
+        result = VideoService.combine_video(request.data.get('segments', None),  request.data.get('width', None), request.data.get('height', None))
+    except Exception as ex:
+        logging.error("Error : ", ex)
+        return Response("Could not process" + str(ex), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+    return Response(result)

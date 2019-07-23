@@ -22,6 +22,7 @@ urlpatterns = [
     path(r'', index),
     path(r'api/process-interval', process_interval),
     path(r'api/process-range', process_range),
-    path(r'api/process-segments', process_segments)
+    path(r'api/process-segments', process_segments),
+    path(r'api/combine-video', combine_video)
 ]
 

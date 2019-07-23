@@ -58,3 +58,20 @@ class VideoService():
             result.append({"video_url": VideoService.BASE_URL.format(new_name)})
 
         return {"interval_videos": result}
+
+    @staticmethod
+    def combine_video(video_urls, width, height):
+        clips = []
+        for video in video_urls:
+            video_url = video.get('video_url')
+            name = video_url.rsplit('/', 1)[1]
+            r = requests.get(video_url, allow_redirects=True)
+            open('static/' + name, 'wb').write(r.content)
+            clip = VideoFileClip('static/' + name)
+            clips.append(clip.subclip(video.get("start"), video.get("end")))
+
+        final_clip = concatenate_videoclips(clips)
+        final_clip.resize(width=width, height=height).write_videofile("static/" + VideoService.ProcessedFile.format("final"))
+        result = {"video_url": VideoService.BASE_URL.format("final")}
+
+        return result
