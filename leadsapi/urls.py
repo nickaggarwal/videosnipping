@@ -15,10 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from restapi.views import index
+from restapi.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path(r'', index),
+    path(r'api/process-interval', process_interval),
+    path(r'api/process-range', process_range),
+    path(r'api/process-segments', process_segments)
 ]
 
