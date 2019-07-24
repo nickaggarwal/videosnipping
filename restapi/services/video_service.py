@@ -1,9 +1,10 @@
 from moviepy.editor import *
 import requests
 
+
 class VideoService():
 
-    BASE_URL = "http://localhost:8080/static/{}"
+    BASE_URL = "http://webapp:8080/static/{}"
     ProcessedFile = "video-processed-{}.mp4"
 
     @staticmethod
@@ -13,10 +14,10 @@ class VideoService():
         r = requests.get(video_url, allow_redirects=True)
         open('static/'+name, 'wb').write(r.content)
         clip = VideoFileClip('static/'+name)
-        if clip.duration < interval_time :
-            result.append({"video_url" : VideoService.BASE_URL.format(name)})
+        if clip.duration < interval_time:
+            result.append({"video_url": VideoService.BASE_URL.format(name)})
         else:
-            no_of_file = int( int(clip.duration) / interval_time ) + 1
+            no_of_file = int(int(clip.duration) / interval_time) + 1
             for i in range(0, no_of_file):
                 new_name = VideoService.ProcessedFile.format(i)
                 start = i*interval_time
@@ -73,7 +74,7 @@ class VideoService():
 
         final_clip = concatenate_videoclips(clips)
         name = VideoService.ProcessedFile.format("final")
-        final_clip.resize(width=width, height=height).write_videofile("static/" + name)
+        final_clip.resize((height,width)).write_videofile("static/" + name)
         result = {"video_url": VideoService.BASE_URL.format(name)}
 
         return result
