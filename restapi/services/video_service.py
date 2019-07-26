@@ -4,7 +4,7 @@ import requests
 
 class VideoService():
 
-    BASE_URL = "http://restapp:8080/static/{}"
+    BASE_URL = "http://webapp:8080/static/{}"
     ProcessedFile = "video-processed-{}.mp4"
 
     @staticmethod
@@ -51,6 +51,8 @@ class VideoService():
         r = requests.get(video_url, allow_redirects=True)
         open('static/' + name, 'wb').write(r.content)
         clip = VideoFileClip('static/' + name)
+        if clip.duration < no_of_file :
+            return None
         interval_time = int( clip.duration) / no_of_file
         for i in range(0, no_of_file):
             clip = VideoFileClip('static/' + name)

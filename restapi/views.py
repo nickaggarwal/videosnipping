@@ -26,7 +26,7 @@ def process_interval(request):
         result = VideoService.process_interval(request.data.get('video_link', None),  request.data.get('interval_duration', None))
     except Exception as ex:
         logging.error("Error : ", ex)
-        return Response("Could not process" + str(ex), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
 
 
@@ -42,7 +42,7 @@ def process_range(request):
         result = VideoService.process_ranges(request.data.get('video_link', None),  request.data.get('interval_range', None))
     except Exception as ex:
         logging.error("Error : ", ex)
-        return Response("Could not process" + str(ex), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
 
 
@@ -56,9 +56,11 @@ def process_segments(request):
         if request.data.get('video_link', None) is None:
             raise Exception("Url is Required")
         result = VideoService.process_segments(request.data.get('video_link', None),  request.data.get('no_of_segments', None))
+        if result is None:
+            raise Exception("No of Segments is greater than video length ")
     except Exception as ex:
         logging.error("Error : ", ex)
-        return Response("Could not process" + str(ex), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
 
 
@@ -74,5 +76,5 @@ def combine_video(request):
         result = VideoService.combine_video(request.data.get('segments', None),  request.data.get('width', None), request.data.get('height', None))
     except Exception as ex:
         logging.error("Error : ", ex)
-        return Response("Could not process" + str(ex), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
