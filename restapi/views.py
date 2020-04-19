@@ -11,7 +11,7 @@ logger = logging.getLogger("Rest")
 
 
 def index(request):
-    return HttpResponse("Hello, world. You're at Leads API.")
+    return HttpResponse("Hello, world. You're at Video API.")
 
 
 @api_view(['POST'])
@@ -20,9 +20,15 @@ def process_interval(request):
     """
     Store the Result for User Url
     """
+    # Validation Service
+
+    if request.data.get('video_link', None) is None:
+        return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
-        if request.data.get('video_link', None) is None:
-            raise Exception("Url is Required")
+        if not VideoService.validate_video_no_of_segments(request.data.get('video_link', None),
+                                                          request.data.get('interval_duration', None)):
+            return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
         result = VideoService.process_interval(request.data.get('video_link', None),  request.data.get('interval_duration', None))
     except Exception as ex:
         logging.error("Error : ", ex)
@@ -36,9 +42,14 @@ def process_range(request):
     """
     Store the Result for User Url
     """
+
+    if request.data.get('video_link', None) is None:
+        return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
-        if request.data.get('video_link', None) is None:
-            raise Exception("Url is Required")
+        if not VideoService.validate_video_range(request.data.get('video_link', None),
+                                                 request.data.get('interval_range', None)):
+            return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
         result = VideoService.process_ranges(request.data.get('video_link', None),  request.data.get('interval_range', None))
     except Exception as ex:
         logging.error("Error : ", ex)
@@ -52,9 +63,15 @@ def process_segments(request):
     """
     Store the Result for User Url
     """
+
+    if request.data.get('video_link', None) is None:
+        return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
+
     try:
-        if request.data.get('video_link', None) is None:
-            raise Exception("Url is Required")
+        if not VideoService.validate_video_no_of_segments(request.data.get('video_link', None),
+                                                          request.data.get('no_of_segments', None)):
+            return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
         result = VideoService.process_segments(request.data.get('video_link', None),  request.data.get('no_of_segments', None))
         if result is None:
             raise Exception("No of Segments is greater than video length ")
@@ -70,9 +87,13 @@ def combine_video(request):
     """
     Store the Result for User Url
     """
+
+    if request.data.get('segments', None) is None:
+        return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
-        if request.data.get('segments', None) is None:
-            raise Exception("Url is Required")
+        if not VideoService.validate_combine(request.data.get('segments', None)):
+            return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
         result = VideoService.combine_video(request.data.get('segments', None),  request.data.get('width', None), request.data.get('height', None))
     except Exception as ex:
         logging.error("Error : ", ex)

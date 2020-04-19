@@ -1,11 +1,66 @@
 from moviepy.editor import *
 import requests
+import boto3
+
+
+ACCESS_KEY = 'AKIAUOQYXSVUUFZPIGXH'
+SECRET_KEY = '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'
+
+
+def upload_to_aws(local_file, bucket, s3_file):
+    s3 = boto3.client('s3', aws_access_key_id=ACCESS_KEY,
+                      aws_secret_access_key=SECRET_KEY)
+
+    try:
+        s3.upload_file(local_file, bucket, s3_file)
+        print("Upload Successful")
+        return True
+    except FileNotFoundError:
+        print("The file was not found")
+        return False
 
 
 class VideoService():
 
-    BASE_URL = "http://webapp:8080/static/{}"
+    BASE_URL = "https://cj-video-test.s3.amazonaws.com/{}"
     ProcessedFile = "video-processed-{}.mp4"
+
+    @staticmethod
+    def validate_video_no_of_segments(video_url, no_of_segments):
+        name = video_url.rsplit('/', 1)[1]
+        r = requests.get(video_url, allow_redirects=True)
+        open('static/' + name, 'wb').write(r.content)
+        clip = VideoFileClip('static/' + name)
+        if clip.duration < no_of_segments:
+            return False
+        return True
+
+    @staticmethod
+    def validate_video_range(video_url, ranges):
+        name = video_url.rsplit('/', 1)[1]
+        r = requests.get(video_url, allow_redirects=True)
+        open('static/' + name, 'wb').write(r.content)
+        clip = VideoFileClip('static/' + name)
+        for part in ranges:
+            if part.get("start") > clip.duration :
+                return False
+            if part.get("end") > clip.duration:
+                return False
+        return True
+
+    @staticmethod
+    def validate_combine(video_urls):
+        for video in video_urls:
+            video_url = video.get('video_url')
+            name = video_url.rsplit('/', 1)[1]
+            r = requests.get(video_url, allow_redirects=True)
+            open('static/' + name, 'wb').write(r.content)
+            clip = VideoFileClip('static/' + name)
+            if video.get("start") > clip.duration:
+                return False
+            if video.get("end") > clip.duration:
+                return False
+        return True
 
     @staticmethod
     def process_interval(video_url, interval_time):
@@ -14,17 +69,15 @@ class VideoService():
         r = requests.get(video_url, allow_redirects=True)
         open('static/'+name, 'wb').write(r.content)
         clip = VideoFileClip('static/' + name)
-        if clip.duration < interval_time:
-            result.append({"video_url": VideoService.BASE_URL.format(name)})
-        else:
-            no_of_file = int(int(clip.duration) / interval_time) + 1
-            for i in range(0, no_of_file):
-                new_name = VideoService.ProcessedFile.format(i)
-                clip = VideoFileClip('static/' + name)
-                start = i*interval_time
-                end = min((i+1)*interval_time, clip.duration)
-                clip.subclip(start, end).write_videofile("static/"+new_name)
-                result.append({"video_url": VideoService.BASE_URL.format(new_name)})
+        no_of_file = int(int(clip.duration) / interval_time) + 1
+        for i in range(0, no_of_file):
+            new_name = VideoService.ProcessedFile.format(i)
+            clip = VideoFileClip('static/' + name)
+            start = i*interval_time
+            end = min((i+1)*interval_time, clip.duration)
+            clip.subclip(start, end).write_videofile("static/"+new_name)
+            upload_to_aws("static/" + new_name, "cj-video-test", new_name)
+            result.append({"video_url": VideoService.BASE_URL.format(new_name)})
 
         return {"interval_videos": result}
 
@@ -39,6 +92,7 @@ class VideoService():
             clip = VideoFileClip('static/' + name)
             new_name = VideoService.ProcessedFile.format(i)
             clip.subclip(part.get("start"), part.get("end")).write_videofile("static/"+new_name)
+            upload_to_aws("static/" + new_name, "cj-video-test", new_name)
             result.append({"video_url": VideoService.BASE_URL.format(new_name)})
             i += 1
 
@@ -60,6 +114,7 @@ class VideoService():
             start = i * interval_time
             end = min((i + 1) * interval_time, clip.duration)
             clip.subclip(start, end).write_videofile("static/" + new_name)
+            upload_to_aws("static/" + new_name, "cj-video-test", new_name)
             result.append({"video_url": VideoService.BASE_URL.format(new_name)})
 
         return {"interval_videos": result}
@@ -78,6 +133,7 @@ class VideoService():
         final_clip = concatenate_videoclips(clips)
         name = VideoService.ProcessedFile.format("final")
         final_clip.resize((height,width)).write_videofile("static/" + name)
+        upload_to_aws("static/" + name, "cj-video-test", name)
         result = {"video_url": VideoService.BASE_URL.format(name)}
 
         return result
