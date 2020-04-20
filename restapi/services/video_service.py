@@ -23,7 +23,7 @@ def upload_to_aws(local_file, bucket, s3_file):
 class VideoService():
 
     BASE_URL = "https://cj-video-test.s3.amazonaws.com/{}"
-    ProcessedFile = "video-processed-{}.mp4"
+    ProcessedFile = "video-proces-{}.mp4"
 
     @staticmethod
     def validate_video_no_of_segments(video_url, no_of_segments):
