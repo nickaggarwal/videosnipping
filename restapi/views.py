@@ -1,3 +1,6 @@
+import os
+from shutil import copyfile
+
 from django.http import HttpResponse
 
 # Create your views here.
@@ -6,6 +9,8 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 import logging
+
+from leadsapi.settings import BASE_DIR
 from restapi.services.video_service import VideoService
 logger = logging.getLogger("Rest")
 
@@ -99,3 +104,18 @@ def combine_video(request):
         logging.error("Error : ", ex)
         return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
+
+
+@api_view(['POST'])
+@renderer_classes((JSONRenderer,))
+def reset_db(request):
+    print('Reinitializing the database..')
+    DB_FILE = os.path.join(BASE_DIR, 'db.sqlite3')
+    DB_RESTORE_FILE = os.path.join(BASE_DIR, 'db.sqlite3.restore')
+    if os.path.exists(DB_FILE) and os.path.exists(DB_RESTORE_FILE):
+        os.remove(DB_FILE)
+        copyfile(DB_RESTORE_FILE, DB_FILE)
+    else:
+        print('No reinitialization required!')
+    return Response({"status": "Success"}, status=status.HTTP_202_ACCEPTED)
+
