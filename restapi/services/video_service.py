@@ -1,3 +1,5 @@
+import uuid
+
 from moviepy.editor import *
 import requests
 import boto3
@@ -5,6 +7,7 @@ import boto3
 
 ACCESS_KEY = 'AKIAUOQYXSVUUFZPIGXH'
 SECRET_KEY = '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'
+TOKEN = 'CJ-Video-Test-{}'
 
 
 def upload_to_aws(local_file, bucket, s3_file):
@@ -24,6 +27,10 @@ class VideoService():
 
     BASE_URL = "https://cj-video-test.s3.amazonaws.com/{}"
     ProcessedFile = "video-proces-{}.mp4"
+
+    @staticmethod
+    def get_s3_name(name):
+        return TOKEN.format(str(uuid.uuid1())) + name
 
     @staticmethod
     def validate_video_no_of_segments(video_url, no_of_segments):
@@ -76,7 +83,7 @@ class VideoService():
             start = i*interval_time
             end = min((i+1)*interval_time, clip.duration)
             clip.subclip(start, end).write_videofile("static/"+new_name)
-            upload_to_aws("static/" + new_name, "cj-video-test", new_name)
+            upload_to_aws("static/" + new_name, "cj-video-test", VideoService.get_s3_name(new_name))
             result.append({"video_url": VideoService.BASE_URL.format(new_name)})
 
         return {"interval_videos": result}
@@ -92,8 +99,9 @@ class VideoService():
             clip = VideoFileClip('static/' + name)
             new_name = VideoService.ProcessedFile.format(i)
             clip.subclip(part.get("start"), part.get("end")).write_videofile("static/"+new_name)
-            upload_to_aws("static/" + new_name, "cj-video-test", new_name)
-            result.append({"video_url": VideoService.BASE_URL.format(new_name)})
+            s3_name = VideoService.get_s3_name(new_name)
+            upload_to_aws("static/" + new_name, "cj-video-test", s3_name)
+            result.append({"video_url": VideoService.BASE_URL.format(s3_name)})
             i += 1
 
         return {"interval_videos": result}
@@ -114,8 +122,9 @@ class VideoService():
             start = i * interval_time
             end = min((i + 1) * interval_time, clip.duration)
             clip.subclip(start, end).write_videofile("static/" + new_name)
-            upload_to_aws("static/" + new_name, "cj-video-test", new_name)
-            result.append({"video_url": VideoService.BASE_URL.format(new_name)})
+            s3_name = VideoService.get_s3_name(new_name)
+            upload_to_aws("static/" + new_name, "cj-video-test", s3_name)
+            result.append({"video_url": VideoService.BASE_URL.format(s3_name)})
 
         return {"interval_videos": result}
 
@@ -133,7 +142,8 @@ class VideoService():
         final_clip = concatenate_videoclips(clips)
         name = VideoService.ProcessedFile.format("final")
         final_clip.resize((height,width)).write_videofile("static/" + name)
-        upload_to_aws("static/" + name, "cj-video-test", name)
-        result = {"video_url": VideoService.BASE_URL.format(name)}
+        s3_name = VideoService.get_s3_name(name)
+        upload_to_aws("static/" + name, "cj-video-test", VideoService.get_s3_name(s3_name))
+        result = {"video_url": VideoService.BASE_URL.format(s3_name)}
 
         return result
