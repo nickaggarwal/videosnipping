@@ -36,8 +36,8 @@ class VideoService():
     def validate_video_no_of_segments(video_url, no_of_segments):
         name = video_url.rsplit('/', 1)[1]
         r = requests.get(video_url, allow_redirects=True)
-        open('static/' + name, 'wb').write(r.content)
-        clip = VideoFileClip('static/' + name)
+        open('/tmp/' + name, 'wb').write(r.content)
+        clip = VideoFileClip('/tmp/' + name)
         if clip.duration < no_of_segments:
             return False
         return True
@@ -46,8 +46,8 @@ class VideoService():
     def validate_video_range(video_url, ranges):
         name = video_url.rsplit('/', 1)[1]
         r = requests.get(video_url, allow_redirects=True)
-        open('static/' + name, 'wb').write(r.content)
-        clip = VideoFileClip('static/' + name)
+        open('/tmp/' + name, 'wb').write(r.content)
+        clip = VideoFileClip('/tmp/' + name)
         for part in ranges:
             if part.get("start") > clip.duration :
                 return False
@@ -61,8 +61,8 @@ class VideoService():
             video_url = video.get('video_url')
             name = video_url.rsplit('/', 1)[1]
             r = requests.get(video_url, allow_redirects=True)
-            open('static/' + name, 'wb').write(r.content)
-            clip = VideoFileClip('static/' + name)
+            open('/tmp/' + name, 'wb').write(r.content)
+            clip = VideoFileClip('/tmp/' + name)
             if video.get("start") > clip.duration:
                 return False
             if video.get("end") > clip.duration:
@@ -74,16 +74,16 @@ class VideoService():
         result = []
         name = video_url.rsplit('/', 1)[1]
         r = requests.get(video_url, allow_redirects=True)
-        open('static/'+name, 'wb').write(r.content)
-        clip = VideoFileClip('static/' + name)
+        open('/tmp/'+name, 'wb').write(r.content)
+        clip = VideoFileClip('/tmp/' + name)
         no_of_file = int(int(clip.duration) / interval_time) + 1
         for i in range(0, no_of_file):
             new_name = VideoService.ProcessedFile.format(i)
-            clip = VideoFileClip('static/' + name)
+            clip = VideoFileClip('/tmp/' + name)
             start = i*interval_time
             end = min((i+1)*interval_time, clip.duration)
-            clip.subclip(start, end).write_videofile("static/"+new_name)
-            upload_to_aws("static/" + new_name, "cj-video-test", VideoService.get_s3_name(new_name))
+            clip.subclip(start, end).write_videofile("/tmp/"+new_name)
+            upload_to_aws("/tmp/" + new_name, "cj-video-test", VideoService.get_s3_name(new_name))
             result.append({"video_url": VideoService.BASE_URL.format(new_name)})
 
         return {"interval_videos": result}
@@ -93,14 +93,14 @@ class VideoService():
         result = []
         name = video_url.rsplit('/', 1)[1]
         r = requests.get(video_url, allow_redirects=True)
-        open('static/'+name, 'wb').write(r.content)
+        open('/tmp/'+name, 'wb').write(r.content)
         i = 0
         for part in ranges:
-            clip = VideoFileClip('static/' + name)
+            clip = VideoFileClip('/tmp/' + name)
             new_name = VideoService.ProcessedFile.format(i)
-            clip.subclip(part.get("start"), part.get("end")).write_videofile("static/"+new_name)
+            clip.subclip(part.get("start"), part.get("end")).write_videofile("/tmp/"+new_name)
             s3_name = VideoService.get_s3_name(new_name)
-            upload_to_aws("static/" + new_name, "cj-video-test", s3_name)
+            upload_to_aws("/tmp/" + new_name, "cj-video-test", s3_name)
             result.append({"video_url": VideoService.BASE_URL.format(s3_name)})
             i += 1
 
@@ -111,39 +111,39 @@ class VideoService():
         result = []
         name = video_url.rsplit('/', 1)[1]
         r = requests.get(video_url, allow_redirects=True)
-        open('static/' + name, 'wb').write(r.content)
-        clip = VideoFileClip('static/' + name)
+        open('/tmp/' + name, 'wb').write(r.content)
+        clip = VideoFileClip('/tmp/' + name)
         if clip.duration < no_of_file :
             return None
         interval_time = int( clip.duration) / no_of_file
         for i in range(0, no_of_file):
-            clip = VideoFileClip('static/' + name)
+            clip = VideoFileClip('/tmp/' + name)
             new_name = VideoService.ProcessedFile.format(i)
             start = i * interval_time
             end = min((i + 1) * interval_time, clip.duration)
-            clip.subclip(start, end).write_videofile("static/" + new_name)
+            clip.subclip(start, end).write_videofile("/tmp/" + new_name)
             s3_name = VideoService.get_s3_name(new_name)
-            upload_to_aws("static/" + new_name, "cj-video-test", s3_name)
+            upload_to_aws("/tmp/" + new_name, "cj-video-test", s3_name)
             result.append({"video_url": VideoService.BASE_URL.format(s3_name)})
 
         return {"interval_videos": result}
 
     @staticmethod
     def combine_video(video_urls, width, height):
-        clips = []
+        clips = []git
         for video in video_urls:
             video_url = video.get('video_url')
             name = video_url.rsplit('/', 1)[1]
             r = requests.get(video_url, allow_redirects=True)
             open('static/' + name, 'wb').write(r.content)
-            clip = VideoFileClip('static/' + name)
+            clip = VideoFileClip('/tmp/' + name)
             clips.append(clip.subclip(video.get("start"), video.get("end")))
 
         final_clip = concatenate_videoclips(clips)
         name = VideoService.ProcessedFile.format("final")
-        final_clip.resize((height,width)).write_videofile("static/" + name)
+        final_clip.resize((height,width)).write_videofile("/tmp/" + name)
         s3_name = VideoService.get_s3_name(name)
-        upload_to_aws("static/" + name, "cj-video-test", VideoService.get_s3_name(s3_name))
+        upload_to_aws("/tmp/" + name, "cj-video-test", VideoService.get_s3_name(s3_name))
         result = {"video_url": VideoService.BASE_URL.format(s3_name)}
 
         return result
