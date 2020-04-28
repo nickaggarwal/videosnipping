@@ -110,9 +110,7 @@ def combine_video(request):
 @renderer_classes((JSONRenderer,))
 def reset_db(request):
     print('Clearing directories..')
-    rmtree(os.path.join(BASE_DIR, 'static'))
-    print('Clearing directories..')
-    os.makedirs(os.path.join(BASE_DIR, 'static'))
+    clear_dir('/tmp')
     print('Reinitializing the database..')
     DB_FILE = os.path.join(BASE_DIR, 'db.sqlite3')
     DB_RESTORE_FILE = os.path.join(BASE_DIR, 'db.sqlite3.restore')
@@ -123,3 +121,14 @@ def reset_db(request):
         print('No reinitialization required!')
     return Response({"status": "Success"}, status=status.HTTP_202_ACCEPTED)
 
+
+def clear_dir(folder):
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))

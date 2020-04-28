@@ -130,7 +130,7 @@ class VideoService():
 
     @staticmethod
     def combine_video(video_urls, width, height):
-        clips = []git
+        clips = []
         for video in video_urls:
             video_url = video.get('video_url')
             name = video_url.rsplit('/', 1)[1]
