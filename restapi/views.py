@@ -1,3 +1,6 @@
+import os
+from shutil import copyfile, rmtree
+
 from django.http import HttpResponse
 
 # Create your views here.
@@ -6,6 +9,8 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 import logging
+
+from leadsapi.settings import BASE_DIR
 from restapi.services.video_service import VideoService
 logger = logging.getLogger("Rest")
 
@@ -99,3 +104,31 @@ def combine_video(request):
         logging.error("Error : ", ex)
         return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
+
+
+@api_view(['POST'])
+@renderer_classes((JSONRenderer,))
+def reset_db(request):
+    print('Clearing directories..')
+    clear_dir('/tmp')
+    print('Reinitializing the database..')
+    DB_FILE = os.path.join(BASE_DIR, 'db.sqlite3')
+    DB_RESTORE_FILE = os.path.join(BASE_DIR, 'db.sqlite3.restore')
+    if os.path.exists(DB_FILE) and os.path.exists(DB_RESTORE_FILE):
+        os.remove(DB_FILE)
+        copyfile(DB_RESTORE_FILE, DB_FILE)
+    else:
+        print('No reinitialization required!')
+    return Response({"status": "Success"}, status=status.HTTP_202_ACCEPTED)
+
+
+def clear_dir(folder):
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
