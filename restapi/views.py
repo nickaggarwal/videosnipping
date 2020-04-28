@@ -1,5 +1,5 @@
 import os
-from shutil import copyfile
+from shutil import copyfile, rmtree
 
 from django.http import HttpResponse
 
@@ -109,6 +109,10 @@ def combine_video(request):
 @api_view(['POST'])
 @renderer_classes((JSONRenderer,))
 def reset_db(request):
+    print('Clearing directories..')
+    rmtree(os.path.join(BASE_DIR, 'static'))
+    print('Clearing directories..')
+    os.makedirs(os.path.join(BASE_DIR, 'static'))
     print('Reinitializing the database..')
     DB_FILE = os.path.join(BASE_DIR, 'db.sqlite3')
     DB_RESTORE_FILE = os.path.join(BASE_DIR, 'db.sqlite3.restore')
