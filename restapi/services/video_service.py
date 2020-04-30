@@ -135,7 +135,7 @@ class VideoService():
             video_url = video.get('video_url')
             name = video_url.rsplit('/', 1)[1]
             r = requests.get(video_url, allow_redirects=True)
-            open('static/' + name, 'wb').write(r.content)
+            open('/tmp/' + name, 'wb').write(r.content)
             clip = VideoFileClip('/tmp/' + name)
             clips.append(clip.subclip(video.get("start"), video.get("end")))
 
