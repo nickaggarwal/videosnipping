@@ -140,10 +140,10 @@ class VideoService():
             clips.append(clip.subclip(video.get("start"), video.get("end")))
 
         final_clip = concatenate_videoclips(clips)
-        name = VideoService.ProcessedFile.format("final")
+        name = VideoService.ProcessedFile.format("f")
         final_clip.resize((height,width)).write_videofile("/tmp/" + name)
         s3_name = VideoService.get_s3_name(name)
-        upload_to_aws("/tmp/" + name, "cj-video-test", VideoService.get_s3_name(s3_name))
+        upload_to_aws("/tmp/" + name, "cj-video-test", s3_name)
         result = {"video_url": VideoService.BASE_URL.format(s3_name)}
 
         return result
