@@ -12,6 +12,7 @@ import logging
 
 from leadsapi.settings import BASE_DIR
 from restapi.services.video_service import VideoService
+
 logger = logging.getLogger("Rest")
 
 
@@ -27,14 +28,13 @@ def process_interval(request):
     """
     # Validation Service
 
-    if request.data.get('video_link', None) is None:
-        return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
-
     try:
-        if not VideoService.validate_video_no_of_segments(request.data.get('video_link', None),
-                                                          request.data.get('interval_duration', None)):
+        if request.data.get('video_link', None) is None or not VideoService.validate_video_no_of_segments(
+                request.data.get('video_link', None),
+                request.data.get('interval_duration', None)):
             return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
-        result = VideoService.process_interval(request.data.get('video_link', None),  request.data.get('interval_duration', None))
+        result = VideoService.process_interval(request.data.get('video_link', None),
+                                               request.data.get('interval_duration', None))
     except Exception as ex:
         logging.error("Error : ", ex)
         return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -48,14 +48,13 @@ def process_range(request):
     Store the Result for User Url
     """
 
-    if request.data.get('video_link', None) is None:
-        return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
-
     try:
-        if not VideoService.validate_video_range(request.data.get('video_link', None),
-                                                 request.data.get('interval_range', None)):
+        if request.data.get('video_link', None) is None or not VideoService.validate_video_range(
+                request.data.get('video_link', None),
+                request.data.get('interval_range', None)):
             return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
-        result = VideoService.process_ranges(request.data.get('video_link', None),  request.data.get('interval_range', None))
+        result = VideoService.process_ranges(request.data.get('video_link', None),
+                                             request.data.get('interval_range', None))
     except Exception as ex:
         logging.error("Error : ", ex)
         return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -69,15 +68,13 @@ def process_segments(request):
     Store the Result for User Url
     """
 
-    if request.data.get('video_link', None) is None:
-        return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
-
-
     try:
-        if not VideoService.validate_video_no_of_segments(request.data.get('video_link', None),
-                                                          request.data.get('no_of_segments', None)):
+        if request.data.get('video_link', None) is None or not VideoService.validate_video_no_of_segments(
+                request.data.get('video_link', None),
+                request.data.get('no_of_segments', None)):
             return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
-        result = VideoService.process_segments(request.data.get('video_link', None),  request.data.get('no_of_segments', None))
+        result = VideoService.process_segments(request.data.get('video_link', None),
+                                               request.data.get('no_of_segments', None))
         if result is None:
             raise Exception("No of Segments is greater than video length ")
     except Exception as ex:
@@ -93,13 +90,12 @@ def combine_video(request):
     Store the Result for User Url
     """
 
-    if request.data.get('segments', None) is None:
-        return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
-
     try:
-        if not VideoService.validate_combine(request.data.get('segments', None)):
+        if request.data.get('segments', None) is None or not VideoService.validate_combine(
+                request.data.get('segments', None)):
             return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
-        result = VideoService.combine_video(request.data.get('segments', None),  request.data.get('width', None), request.data.get('height', None))
+        result = VideoService.combine_video(request.data.get('segments', None), request.data.get('width', None),
+                                            request.data.get('height', None))
     except Exception as ex:
         logging.error("Error : ", ex)
         return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
