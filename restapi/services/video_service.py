@@ -49,7 +49,7 @@ class VideoService(object):
         open('/tmp/' + name, 'wb').write(r.content)
         clip = VideoFileClip('/tmp/' + name)
         for part in ranges:
-            if part.get("start") > clip.duration :
+            if part.get("start") > clip.duration:
                 return False
             if part.get("end") > clip.duration:
                 return False
@@ -141,10 +141,9 @@ class VideoService(object):
 
         final_clip = concatenate_videoclips(clips)
         name = VideoService.processed_file.format("f")
-        final_clip.resize((height,width)).write_videofile("/tmp/" + name)
+        final_clip.resize((height, width)).write_videofile("/tmp/" + name)
         s3_name = VideoService.get_s3_name(name)
         upload_to_aws("/tmp/" + name, "cj-video-test", s3_name)
         result = {"video_url": VideoService.BASE_URL.format(s3_name)}
-
         return result
 
