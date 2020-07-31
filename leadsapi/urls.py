@@ -26,4 +26,3 @@ urlpatterns = [
     path(r'api/combine-video', combine_video),
     path(r'api/reset-db/', reset_db),
 ]
-

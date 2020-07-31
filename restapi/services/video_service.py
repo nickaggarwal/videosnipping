@@ -146,4 +146,3 @@ class VideoService(object):
         upload_to_aws("/tmp/" + name, "cj-video-test", s3_name)
         result = {"video_url": VideoService.BASE_URL.format(s3_name)}
         return result
-
