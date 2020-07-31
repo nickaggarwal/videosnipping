@@ -1,9 +1,8 @@
 import uuid
 
-from moviepy.editor import *
-import requests
 import boto3
-
+import requests
+from moviepy.editor import *
 
 ACCESS_KEY = 'AKIAUOQYXSVUUFZPIGXH'
 SECRET_KEY = '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'
@@ -49,7 +48,7 @@ class VideoService():
         open('/tmp/' + name, 'wb').write(r.content)
         clip = VideoFileClip('/tmp/' + name)
         for part in ranges:
-            if part.get("start") > clip.duration :
+            if part.get("start") > clip.duration:
                 return False
             if part.get("end") > clip.duration:
                 return False
@@ -113,9 +112,9 @@ class VideoService():
         r = requests.get(video_url, allow_redirects=True)
         open('/tmp/' + name, 'wb').write(r.content)
         clip = VideoFileClip('/tmp/' + name)
-        if clip.duration < no_of_file :
+        if clip.duration < no_of_file:
             return None
-        interval_time = int( clip.duration) / no_of_file
+        interval_time = int(clip.duration) / no_of_file
         for i in range(0, no_of_file):
             clip = VideoFileClip('/tmp/' + name)
             new_name = VideoService.ProcessedFile.format(i)
@@ -141,7 +140,7 @@ class VideoService():
 
         final_clip = concatenate_videoclips(clips)
         name = VideoService.ProcessedFile.format("f")
-        final_clip.resize((height,width)).write_videofile("/tmp/" + name)
+        final_clip.resize((height, width)).write_videofile("/tmp/" + name)
         s3_name = VideoService.get_s3_name(name)
         upload_to_aws("/tmp/" + name, "cj-video-test", s3_name)
         result = {"video_url": VideoService.BASE_URL.format(s3_name)}

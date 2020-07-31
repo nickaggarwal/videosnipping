@@ -1,6 +1,7 @@
-from django.apps import AppConfig
-from shutil import copyfile
 import os
+from shutil import copyfile
+
+from django.apps import AppConfig
 
 from leadsapi.settings import BASE_DIR
 
@@ -20,6 +21,5 @@ class MyAppConfig(AppConfig):
     verbose_name = "My Application"
 
     def ready(self):
-        import os
         if os.environ.get('RUN_MAIN'):
             startup()
