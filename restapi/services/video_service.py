@@ -113,9 +113,9 @@ class VideoService(object):
         r = requests.get(video_url, allow_redirects=True)
         open('/tmp/' + name, 'wb').write(r.content)
         clip = VideoFileClip('/tmp/' + name)
-        if clip.duration < no_of_file :
+        if clip.duration < no_of_file:
             return None
-        interval_time = int( clip.duration) / no_of_file
+        interval_time = int(clip.duration) / no_of_file
         for i in range(0, no_of_file):
             clip = VideoFileClip('/tmp/' + name)
             new_name = VideoService.processed_file.format(i)

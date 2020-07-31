@@ -15,7 +15,7 @@ from restapi.services.video_service import VideoService
 logger = logging.getLogger("Rest")
 
 
-def index(request):
+def index():
     return HttpResponse("Hello, world. You're at Video API.")
 
 
@@ -96,14 +96,14 @@ def combine_video(request):
         result = VideoService.combine_video(request.data.get('segments', None), request.data.get('width', None),
                                             request.data.get('height', None))
     except (ValueError, IOError, IndexError, AttributeError, OSError) as ex:
-        logger.error("Error : ", ex)
+        logger.error("Error : %s", ex)
         return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
 
 
 @api_view(['POST'])
 @renderer_classes((JSONRenderer,))
-def reset_db(request):
+def reset_db():
     print('Clearing directories..')
     clear_dir('/tmp')
     print('Reinitializing the database..')
