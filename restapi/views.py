@@ -1,14 +1,13 @@
+import logging
 import os
 from shutil import copyfile, rmtree
 
 from django.http import HttpResponse
-
 # Create your views here.
 from rest_framework import status
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-import logging
 
 from leadsapi.settings import BASE_DIR
 from restapi.services.video_service import VideoService
@@ -35,8 +34,8 @@ def process_interval(request):
             return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
         result = VideoService.process_interval(request.data.get('video_link', None),
                                                request.data.get('interval_duration', None))
-    except Exception as ex:
-        logging.error("Error : ", ex)
+    except (ValueError, IOError, IndexError, AttributeError, OSError) as ex:
+        logger.error("Error : %s", ex)
         return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
 
@@ -55,8 +54,8 @@ def process_range(request):
             return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
         result = VideoService.process_ranges(request.data.get('video_link', None),
                                              request.data.get('interval_range', None))
-    except Exception as ex:
-        logging.error("Error : ", ex)
+    except (ValueError, IOError, IndexError, AttributeError, OSError) as ex:
+        logger.error("Error : %s", ex)
         return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
 
@@ -76,9 +75,9 @@ def process_segments(request):
         result = VideoService.process_segments(request.data.get('video_link', None),
                                                request.data.get('no_of_segments', None))
         if result is None:
-            raise Exception("No of Segments is greater than video length ")
-    except Exception as ex:
-        logging.error("Error : ", ex)
+            raise ValueError("No of Segments is greater than video length ")
+    except (ValueError, IOError, IndexError, AttributeError, OSError) as ex:
+        logger.error("Error : %s", ex)
         return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
 
@@ -96,8 +95,8 @@ def combine_video(request):
             return Response({"reason": "invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
         result = VideoService.combine_video(request.data.get('segments', None), request.data.get('width', None),
                                             request.data.get('height', None))
-    except Exception as ex:
-        logging.error("Error : ", ex)
+    except (ValueError, IOError, IndexError, AttributeError, OSError) as ex:
+        logger.error("Error : ", ex)
         return Response({"reason": "Could not process" + str(ex)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     return Response(result)
 
@@ -126,5 +125,5 @@ def clear_dir(folder):
                 os.unlink(file_path)
             elif os.path.isdir(file_path):
                 rmtree(file_path)
-        except Exception as e:
+        except OSError as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))

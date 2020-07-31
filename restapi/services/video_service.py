@@ -1,9 +1,9 @@
 import uuid
 
-from moviepy.editor import *
-import requests
 import boto3
-
+import requests
+from moviepy.video.compositing.concatenate import concatenate_videoclips
+from moviepy.video.io.VideoFileClip import VideoFileClip
 
 ACCESS_KEY = 'AKIAUOQYXSVUUFZPIGXH'
 SECRET_KEY = '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'
